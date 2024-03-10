@@ -1,0 +1,112 @@
+{% extends 'hospital/patient_base.html' %}
+{% block content %}
+
+<head>
+  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+  <link rel="stylesheet" href="//cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <script src="//cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  
+  <style media="screen">
+    a:link {
+      text-decoration: none;
+    }
+
+    h6 {
+      text-align: center;
+    }
+
+    .row {
+      margin: 10px auto;
+    }
+
+    .table-responsive {
+      text-wrap: nowrap;
+      padding: 0 0 0 0;
+    }
+
+    .view-your-current-appointments-panel{
+      width: 100%;
+      height: 100vw;
+      position: relative;
+      margin: 1px 1px 1px 1px;
+      text-align: justify;
+    }
+  </style>
+</head>
+
+<br><br>
+<div class="container-fluid view-your-current-appointments-panel">
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h6 class="card-title h5">Your Currently Appointments</h6>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive p-3">
+        <table class="table table-hover py-3" id="dev-table">
+          <thead class="table-dark">
+            <tr>
+              <th>Date</th>
+              <th>Doctor Name</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Payment</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in appointments %}
+            <tr>
+              <td>{{ a.appointmentDate }}</td>
+              <td>{{ a.doctorName }}</td>
+              <td>{{ a.description }}</td>
+              <td>
+                {% if a.status == 0 %}
+                  <span class="badge bg-secondary">Pending</span>
+                {% elif a.status == 1 %}
+                  <span class="badge bg-primary">Accepted</span>
+                {% elif a.status == 2 %}
+                  <span class="badge bg-success">Completed</span>
+                {% elif a.status == 3 %}
+                  <span class="badge bg-danger">Rejected</span>
+                {% endif %}
+              </td>
+             <td>
+                  {% if a.status == 0 %}
+                          {% if not payment_made %}
+                              <form id="payment_form" action="https://uat.esewa.com.np/epay/main" method="POST">
+                                  <input value="100" name="tAmt" type="hidden">
+                                  <input value="90" name="amt" type="hidden">
+                                  <input value="5" name="txAmt" type="hidden">
+                                  <input value="2" name="psc" type="hidden">
+                                  <input value="3" name="pdc" type="hidden">
+                                  <input value="EPAYTEST" name="scd" type="hidden">
+                                  <input value="{{ uid }}" name="pid" type="hidden">
+                                  <input value="http://127.0.0.1:8000/patient-view-appointment?q=su" type="hidden" name="su">
+                                  <input value="http://merchant.com.np/page/esewa_payment_failed?q=fu" type="hidden" name="fu">
+                                  <input class="btn btn-primary" value="Pay with esewa" type="submit" style="background-color: green; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px;">
+                              </form>
+                          {% else %}
+                              Payment already made
+                          {% endif %}
+                      {% else %}
+                          {% if a.status == 1 %}
+                              Payment done
+                          {% else %}
+                              Status: {{ a.get_status_display }}
+                          {% endif %}
+                      {% endif %}
+
+                </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  let table = new DataTable('#dev-table');
+</script>
+
+
+{% endblock content %}
